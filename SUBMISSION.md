@@ -4,37 +4,37 @@ Fork URL: <!-- paste the URL of your fork here -->
 
 ## Files to commit
 
-- [ ] `terraform/` with all your `.tf` files, `deploy.sh`, `nginx/`, `systemd/clippy.service`, `README.md` and `docs/architecture.png` (or a diagram in the README)
+- [ ] `terraform/` with all your `.tf` files, `deploy.sh`, `systemd/` (one unit per service), `README.md` and a diagram in `docs/` or the README
 
 ## Questions
 
 Answer in your own words. Where a question asks for output, paste it in a code block.
 
-### Q1. Paste the output of `terraform output` and the URL of your public site. Paste `curl -s -X POST <url>/shorten ...` and its answer.
+### Q1. Paste `terraform output` and the URLs of the vote page and the result page. Cast a vote and paste what the result page shows, and `journalctl -u worker -n 5` from the worker server.
 
 **Your answer:**
 
 <!-- replace this line with your answer -->
 
-### Q2. Show the rules of your three security groups (`terraform state show` or `aws ec2 describe-security-group-rules`). For `sg-app` and `sg-data`, why is the source a security group and not a CIDR block?
+### Q2. Draw the path of one vote: browser, vote server, Redis, worker, PostgreSQL, result server, browser. For each arrow say the protocol, the port and which security group rule allows it.
 
 **Your answer:**
 
 <!-- replace this line with your answer -->
 
-### Q3. Prove the private tiers are unreachable from the internet: paste `aws ec2 describe-instances` showing no public IP on the app and data servers, and a `curl --max-time 5` to the app private IP that times out. Why can the proxy reach them but you cannot?
+### Q3. The apps look for the hosts `redis` and `db` and for the password `postgres`. How did you make those names work on five machines, and what would you do about the password if you could not change the code? What did you try first and what went wrong?
 
 **Your answer:**
 
 <!-- replace this line with your answer -->
 
-### Q4. Run `./deploy.sh` twice and paste the end of both runs. What did you do to make the second run safe? Where do the database and Redis passwords live, and why are they not in git?
+### Q4. Prove the private tiers are unreachable from the internet: show the instances without a public IP and a `curl --max-time 5` to the Redis or database private address that times out. Why can the worker reach Redis and you cannot?
 
 **Your answer:**
 
 <!-- replace this line with your answer -->
 
-### Q5. Where is your Terraform state and how is it protected (bucket versioning, locking)? What happens if two people run `terraform apply` at once?
+### Q5. Run `./deploy.sh` twice and paste the end of both. What did you do to make the second run safe? Which parts of your deployment are still manual or fragile? What would you want a tool to do for you?
 
 **Your answer:**
 

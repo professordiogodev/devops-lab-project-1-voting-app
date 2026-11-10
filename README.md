@@ -1,9 +1,9 @@
-<p align="center"><img src="assets/banner.svg" alt="Project 1 Starter Kit: CloudStack Checker" width="100%"></p>
+<p align="center"><img src="assets/banner.svg" alt="Project 1 Starter Kit: The Voting App Checker" width="100%"></p>
 
 | | |
 |-|-|
 | **Time** | 5 days (project) |
-| **Cost** | a few cents per hour while it runs (NAT Gateway and 3 servers); destroy it every evening |
+| **Cost** | a few cents per hour while it runs (five servers and a NAT Gateway); destroy it every evening |
 | **You need** | An AWS administrator user, the AWS CLI v2, Terraform 1.10 or newer, git, curl and ssh |
 
 ## How this lab works
@@ -22,31 +22,31 @@
 
 ## What this is
 
-Project 1 is a whole week of building, so there is no step-by-step lab. The **brief** (in the course) tells you what to build: Clippy on AWS in three network tiers, with Terraform. This repository gives you the three things every serious project needs next to the code:
+Project 1 is a whole week of building, so there is no step-by-step lab. The **brief** (in the course) tells you what to build: the Example Voting App, five services on five AWS servers, with Terraform. This repository gives you the three things every serious project needs next to the code:
 
 | File | What it does |
 |------|--------------|
-| `verify.sh` | Reads your repository **and your real AWS account** and prints PASS or FAIL for about 35 requirements: subnets and routes, security groups that reference each other, no public IP on the private tiers, IMDSv2, remote state with locking and versioning, no secrets in git, and then the live checks against your public URL |
+| `verify.sh` | Reads your repository, **your real AWS account and the live app**, and prints PASS or FAIL for about 35 requirements: subnets and routes, one security group per service that trusts only its callers, no public IP on the private tiers, remote state, no secrets in git, and then a real vote cast on the vote page that must show up on the result page |
 | `SUBMISSION.md` | The questions you answer when you hand in the project, with pasted output and no screenshots |
 | `teardown.sh` and `verify-teardown.sh` | Destroy it and **prove** nothing is left running (a NAT Gateway bills every hour) |
 
 > [!IMPORTANT]
 > **Your mission**
-> - Fork this repository: it is also where your project lives (`terraform/`, `deploy.sh`, `nginx/`, `systemd/`, `docs/`, `README.md`)
-> - Build the three tiers (read the brief first)
+> - Fork this repository: it is also where your project lives (`terraform/`, `deploy.sh`, `systemd/`, `docs/`, `README.md`)
+> - Build the five servers and get a vote to travel across all of them (read the brief first)
 > - Run `./verify.sh` often. It is the same list your instructor uses. Fix what is red.
 > - On the last day answer `SUBMISSION.md`, destroy everything and paste `./verify-teardown.sh`
 
-**Time:** 5 days (project) | **Cost:** a few cents per hour while it runs (NAT Gateway and 3 servers); destroy it every evening | **You need:** an AWS administrator user, the AWS CLI v2, Terraform 1.10 or newer, git, curl and ssh.
+**Time:** 5 days (project) | **Cost:** a few cents per hour while it runs (five servers and a NAT Gateway); destroy it every evening | **You need:** an AWS administrator user, the AWS CLI v2, Terraform 1.10 or newer, git, curl, ssh and Python 3.
 
 <p align="center"><img src="assets/divider.svg" alt="" width="100%"></p>
 
 ## Rules the checker relies on
 
-1. In the AWS provider block use `default_tags { tags = { Project = "cloudstack" } }`. Every resource carries the tag, and the checker (and the teardown proof) find your resources by it.
-2. Name the instances `proxy-server`, `app-server` and `data-server` (tag `Name`), and the key pair `cloudstack`.
-3. Put all Terraform in `terraform/`. Keep the private key (`*.pem`), the state and your secrets out of git (`.gitignore`). Passwords for PostgreSQL and Redis are generated on your machine and never committed.
-4. Deploy Clippy at the tag `v0.2.0`: `https://github.com/professordiogodev/clippy`.
+1. In the AWS provider block use `default_tags { tags = { Project = "votingapp" } }`. Every resource carries the tag, and the checker and the teardown proof find your resources by it.
+2. Name the servers (tag `Name`) `vote-server`, `result-server`, `worker-server`, `redis-server` and `db-server`.
+3. Put all Terraform in `terraform/`. Keep the private key (`*.pem`), the state and your secrets out of git (`.gitignore`).
+4. Deploy the application from `https://github.com/dockersamples/example-voting-app`. Use the commit `63e9150` so that everybody runs the same code.
 
 ## Using the checker
 
@@ -57,14 +57,14 @@ Project 1 is a whole week of building, so there is no step-by-step lab. The **br
 It needs working AWS credentials (`aws sts get-caller-identity`), Python 3 and curl. Before anything is built it fails on the first AWS check; that is normal. As you build, the list turns green from the top.
 
 > [!NOTE]
-> **Think** `verify.sh` checks that the app server has *no public IP*, and then that the app's private IP times out from your laptop. Why are both needed? What could make the first true and the second false?
+> **Think** `verify.sh` checks that the Redis server has *no public IP*, then that its private address times out from your laptop, and then that a vote still travels through it. Why are all three needed? What could make the first two true and the third false?
 
 ## Your IP changes
 
 Your SSH rule allows **one address** (your public IP as `/32`). If your network changes (home, café, mobile) SSH silently times out. The fix is a variable you update, not `0.0.0.0/0`.
 
 > [!NOTE]
-> **Think** What would an attacker do with port 22 open to the world on a server with a password-less sudo user and an old key? Which control in front of the private tiers makes this a smaller problem than it looks?
+> **Think** What would an attacker do with port 22 open to the world? Why does a jump host in front of the private servers make this a smaller problem?
 
 ## Tearing down
 
@@ -73,7 +73,7 @@ Your SSH rule allows **one address** (your public IP as `/32`). If your network 
 ./verify-teardown.sh
 ```
 
-Empty and delete your state bucket (all versions) after the destroy has finished, delete `cloudstack.pem` and `.secrets/`, and paste the output of `./verify-teardown.sh` in `SUBMISSION.md`. It must end with **TEARDOWN VERIFIED**.
+Empty and delete your state bucket (all versions) after the destroy has finished, delete `votingapp.pem` and `.secrets/`, and paste the output of `./verify-teardown.sh` in `SUBMISSION.md`. It must end with **TEARDOWN VERIFIED**.
 
 <!-- teardown:start (generated by labs.py, do not edit) -->
 ## Tear down (mandatory)
@@ -84,7 +84,7 @@ Resources left behind cost money, keep doors open and pollute the next lab. Remo
 
 Do this **last**, after you have pasted your `verify` output into `SUBMISSION.md` (once you tear down, the lab can no longer be verified).
 
-1. In `terraform/` run `terraform destroy`. Delete the state bucket only after the destroy has finished (empty it, including all versions, then remove it). Delete `cloudstack.pem` and the `.secrets/` folder.
+1. In `terraform/` run `terraform destroy`. Delete the state bucket only after the destroy has finished (empty it, including all versions, then remove it). Delete `votingapp.pem` and the `.secrets/` folder.
 
 Then run the proof:
 
@@ -102,15 +102,15 @@ Answer the questions in `SUBMISSION.md` in **your fork** (paste output in code b
 
 **Files to commit**
 
-- `terraform/` with all your `.tf` files, `deploy.sh`, `nginx/`, `systemd/clippy.service`, `README.md` and `docs/architecture.png` (or a diagram in the README)
+- `terraform/` with all your `.tf` files, `deploy.sh`, `systemd/` (one unit per service), `README.md` and a diagram in `docs/` or the README
 
 **Questions to answer**
 
-1. Paste the output of `terraform output` and the URL of your public site. Paste `curl -s -X POST <url>/shorten ...` and its answer.
-2. Show the rules of your three security groups (`terraform state show` or `aws ec2 describe-security-group-rules`). For `sg-app` and `sg-data`, why is the source a security group and not a CIDR block?
-3. Prove the private tiers are unreachable from the internet: paste `aws ec2 describe-instances` showing no public IP on the app and data servers, and a `curl --max-time 5` to the app private IP that times out. Why can the proxy reach them but you cannot?
-4. Run `./deploy.sh` twice and paste the end of both runs. What did you do to make the second run safe? Where do the database and Redis passwords live, and why are they not in git?
-5. Where is your Terraform state and how is it protected (bucket versioning, locking)? What happens if two people run `terraform apply` at once?
+1. Paste `terraform output` and the URLs of the vote page and the result page. Cast a vote and paste what the result page shows, and `journalctl -u worker -n 5` from the worker server.
+2. Draw the path of one vote: browser, vote server, Redis, worker, PostgreSQL, result server, browser. For each arrow say the protocol, the port and which security group rule allows it.
+3. The apps look for the hosts `redis` and `db` and for the password `postgres`. How did you make those names work on five machines, and what would you do about the password if you could not change the code? What did you try first and what went wrong?
+4. Prove the private tiers are unreachable from the internet: show the instances without a public IP and a `curl --max-time 5` to the Redis or database private address that times out. Why can the worker reach Redis and you cannot?
+5. Run `./deploy.sh` twice and paste the end of both. What did you do to make the second run safe? Which parts of your deployment are still manual or fragile? What would you want a tool to do for you?
 6. Explain one thing that went wrong during the project: what you saw first, how you found the cause, and what you changed.
 7. Paste the output of `./verify.sh`. It must end with **ALL CHECKS PASSED**.
 8. **Tear down.** Paste the output of `./verify-teardown.sh`. It must end with **TEARDOWN VERIFIED**.
