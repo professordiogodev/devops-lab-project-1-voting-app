@@ -7,4 +7,5 @@ ls nginx/* >/dev/null 2>&1 && echo "- ✅ nginx/ config" || { echo "- ❌ nginx/
 if git ls-files | grep -qE '\.pem$|\.tfstate|(^|/)\.secrets/|\.env$'; then echo "- ❌ a key, state file or env file is committed"; rc=1; else echo "- ✅ no key, state or env file committed"; fi
 grep -rEq 'AKIA[0-9A-Z]{16}' . --exclude-dir=.git --exclude-dir=.terraform --exclude=p1check.py && { echo "- ❌ an AWS access key is committed"; rc=1; } || echo "- ✅ no AWS access key committed"
 grep -qE '^ALL CHECKS PASSED \(' SUBMISSION.md && echo "- ✅ SUBMISSION.md shows ALL CHECKS PASSED" || { echo "- ❌ paste the verify.sh output ('ALL CHECKS PASSED') into SUBMISSION.md"; rc=1; }
+grep -qE 'github.com/dockersamples/example-voting-app/pull/[0-9]+' SUBMISSION.md && echo "- ✅ SUBMISSION.md links your upstream pull request" || { echo "- ❌ add the link to your pull request to dockersamples/example-voting-app in SUBMISSION.md"; rc=1; }
 exit $rc

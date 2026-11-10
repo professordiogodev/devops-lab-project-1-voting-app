@@ -46,13 +46,19 @@ Answer in your own words. Where a question asks for output, paste it in a code b
 
 <!-- replace this line with your answer -->
 
-### Q7. Paste the output of `./verify.sh`. It must end with **ALL CHECKS PASSED**.
+### Q7. Paste the link to your pull request to `dockersamples/example-voting-app`. What did you change and why? What did you check on the open issues and pull requests before you started? How did you test it on your servers, and what did you not test? What might a maintainer push back on?
 
 **Your answer:**
 
 <!-- replace this line with your answer -->
 
-### Q8. **Tear down.** Paste the output of `./verify-teardown.sh`. It must end with **TEARDOWN VERIFIED**.
+### Q8. Paste the output of `./verify.sh`. It must end with **ALL CHECKS PASSED**.
+
+**Your answer:**
+
+<!-- replace this line with your answer -->
+
+### Q9. **Tear down.** Paste the output of `./verify-teardown.sh`. It must end with **TEARDOWN VERIFIED**.
 
 **Your answer:**
 

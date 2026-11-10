@@ -14,6 +14,7 @@ Project 1 is a whole week of building, so there is no step-by-step lab. The **br
 > - Fork this repository: it is also where your project lives (`terraform/`, `deploy.sh`, `systemd/`, `docs/`, `README.md`)
 > - Build the five servers and get a vote to travel across all of them (read the brief first)
 > - Run `./verify.sh` often. It is the same list your instructor uses. Fix what is red.
+> - Open one pull request to the upstream project as your final activity (see the brief)
 > - On the last day answer `SUBMISSION.md`, destroy everything and paste `./verify-teardown.sh`
 
 **Time:** 5 days (project) | **Cost:** a few cents per hour while it runs (five servers and a NAT Gateway); destroy it every evening | **You need:** an AWS administrator user, the AWS CLI v2, Terraform 1.10 or newer, git, curl, ssh and Python 3.
@@ -87,6 +88,7 @@ Answer the questions in `SUBMISSION.md` in **your fork** (paste output in code b
 4. Prove the private tiers are unreachable from the internet: show the instances without a public IP and a `curl --max-time 5` to the Redis or database private address that times out. Why can the worker reach Redis and you cannot?
 5. Run `./deploy.sh` twice and paste the end of both. What did you do to make the second run safe? Which parts of your deployment are still manual or fragile? What would you want a tool to do for you?
 6. Explain one thing that went wrong during the project: what you saw first, how you found the cause, and what you changed.
-7. Paste the output of `./verify.sh`. It must end with **ALL CHECKS PASSED**.
-8. **Tear down.** Paste the output of `./verify-teardown.sh`. It must end with **TEARDOWN VERIFIED**.
+7. Paste the link to your pull request to `dockersamples/example-voting-app`. What did you change and why? What did you check on the open issues and pull requests before you started? How did you test it on your servers, and what did you not test? What might a maintainer push back on?
+8. Paste the output of `./verify.sh`. It must end with **ALL CHECKS PASSED**.
+9. **Tear down.** Paste the output of `./verify-teardown.sh`. It must end with **TEARDOWN VERIFIED**.
 <!-- submission:end -->
