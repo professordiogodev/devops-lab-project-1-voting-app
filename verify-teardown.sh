@@ -2,7 +2,7 @@
 # Proves nothing of Project 1 is left running in AWS. Run with: ./verify-teardown.sh
 set -u
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text 2>/dev/null) || { echo "No working AWS credentials." >&2; exit 1; }
-echo "Checking account $ACCOUNT, region $(aws configure get region)"
+echo "Checking account $ACCOUNT, region ${AWS_DEFAULT_REGION:-${AWS_REGION:-$(aws configure get region)}}"
 pass=0; failn=0
 check() { local d="$1"; shift; if "$@" >/dev/null 2>&1; then echo "PASS  $d"; pass=$((pass+1)); else echo "FAIL  $d"; failn=$((failn+1)); fi; }
 empty() { local r; r=$(eval "$1" 2>/dev/null); [ -z "$r" ] || [ "$r" = None ]; }

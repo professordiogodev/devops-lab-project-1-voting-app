@@ -5,12 +5,12 @@
 <text x="48" y="64" font-size="14" letter-spacing="3" fill="#fef08a" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-weight="700">DEVOPS BOOTCAMP · LAB</text>
 <text x="48" y="112" font-size="40" font-weight="800" fill="#ffffff" font-family="Segoe UI,Helvetica,Arial,sans-serif">Project 1 Starter Kit:</text>
 <text x="48" y="160" font-size="40" font-weight="800" fill="#ffffff" font-family="Segoe UI,Helvetica,Arial,sans-serif">The Voting App Checker</text>
-<text x="48" y="190" font-size="15" fill="#e2e8f0" opacity=".92" font-family="Segoe UI,Helvetica,Arial,sans-serif">One application, five services, five machines. The checker and</text>
-<text x="48" y="212" font-size="15" fill="#e2e8f0" opacity=".92" font-family="Segoe UI,Helvetica,Arial,sans-serif">submission file for Project 1. You build the network and the servers</text>
-<text x="48" y="234" font-size="15" fill="#e2e8f0" opacity=".92" font-family="Segoe UI,Helvetica,Arial,sans-serif">with Terraform, install each service on its own machine and connect</text>
-<text x="48" y="256" font-size="15" fill="#e2e8f0" opacity=".92" font-family="Segoe UI,Helvetica,Arial,sans-serif">them. `./verify.sh` reads your real AWS account, your repository and…</text>
+<text x="48" y="190" font-size="15" fill="#e2e8f0" opacity=".92" font-family="Segoe UI,Helvetica,Arial,sans-serif">One application, five services, three machines (a web server, a worker</text>
+<text x="48" y="212" font-size="15" fill="#e2e8f0" opacity=".92" font-family="Segoe UI,Helvetica,Arial,sans-serif">and a data server). The checker and submission file for Project 1. You</text>
+<text x="48" y="234" font-size="15" fill="#e2e8f0" opacity=".92" font-family="Segoe UI,Helvetica,Arial,sans-serif">build the network and the servers with Terraform, choose a machine</text>
+<text x="48" y="256" font-size="15" fill="#e2e8f0" opacity=".92" font-family="Segoe UI,Helvetica,Arial,sans-serif">size for each tier, install the services on them and connect them…</text>
 <rect x="48" y="288" width="165" height="32" rx="16" fill="#ffffff" fill-opacity=".14" stroke="#fef08a" stroke-opacity=".7"/><text x="62" y="309" font-size="14" fill="#ffffff" font-family="Segoe UI,Helvetica,Arial,sans-serif">5 days (project)</text>
-<rect x="225" y="288" width="879" height="32" rx="16" fill="#ffffff" fill-opacity=".14" stroke="#fef08a" stroke-opacity=".7"/><text x="239" y="309" font-size="14" fill="#ffffff" font-family="Segoe UI,Helvetica,Arial,sans-serif">Cost: a few cents per hour while it runs (five servers and a NAT Gateway); destroy it every evening</text>
+<rect x="225" y="288" width="888" height="32" rx="16" fill="#ffffff" fill-opacity=".14" stroke="#fef08a" stroke-opacity=".7"/><text x="239" y="309" font-size="14" fill="#ffffff" font-family="Segoe UI,Helvetica,Arial,sans-serif">Cost: a few cents per hour while it runs (three servers and a NAT Gateway); destroy it every evening</text>
 <g transform="translate(750,73)">
 <g><path d="M60 130 a34 34 0 0 1 8 -66 a46 46 0 0 1 88 8 a30 30 0 0 1 -6 58 Z" fill="#e0f2fe"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="4s" repeatCount="indefinite"/></g>
 <path d="M70 190 v-40 m-10 12 l10 -14 l10 14" fill="none" stroke="#fef08a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="2.4s" begin="-1.0s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0,16;0,-12" dur="2.4s" begin="-1.0s" repeatCount="indefinite"/></path>

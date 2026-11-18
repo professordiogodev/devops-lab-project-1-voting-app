@@ -104,13 +104,13 @@ insts = []
 for r in (aws("ec2", "describe-instances", "--filters", F, "Name=instance-state-name,Values=running,pending") or {}).get("Reservations", []):
     insts += r["Instances"]
 by = {next((t["Value"] for t in i.get("Tags", []) if t["Key"] == "Name"), ""): i for i in insts}
-NAMES = ["vote-server", "result-server", "worker-server", "redis-server", "db-server"]
-check("five running servers named " + ", ".join(NAMES), sorted(by) == sorted(NAMES), "found: %s" % sorted(by))
-vote, result, worker, redis, db = (by.get(n, {}) for n in NAMES)
-check("vote-server and result-server are in a public subnet and have a public IP",
-      all(x.get("PublicIpAddress") and kind.get(x.get("SubnetId")) == "igw" for x in (vote, result)) and bool(vote) and bool(result))
-check("worker, redis and db servers are in private subnets and have NO public IP",
-      all(x and not x.get("PublicIpAddress") and kind.get(x.get("SubnetId")) == "nat" for x in (worker, redis, db)))
+NAMES = ["web-server", "worker-server", "data-server"]
+check("three running servers named " + ", ".join(NAMES), sorted(by) == sorted(NAMES), "found: %s" % sorted(by))
+web, worker, data = (by.get(n, {}) for n in NAMES)
+check("web-server is in a public subnet and has a public IP",
+      bool(web) and bool(web.get("PublicIpAddress")) and kind.get(web.get("SubnetId")) == "igw")
+check("worker-server and data-server are in private subnets and have NO public IP",
+      all(x and not x.get("PublicIpAddress") and kind.get(x.get("SubnetId")) == "nat" for x in (worker, data)))
 check("IMDSv2 is required on all servers", len(insts) > 0 and all(i["MetadataOptions"]["HttpTokens"] == "required" for i in insts))
 check("all servers use the same key pair", len({i.get("KeyName") for i in insts}) == 1 and bool(insts))
 
@@ -133,21 +133,23 @@ def srcs(rules, port):
 
 print("== Security groups: each service trusts only the machines that call it ==")
 ri = {n: ingress(by[n]) for n in by}
-for n in ("vote-server", "result-server"):
-    r = ri.get(n, [])
-    check("%s: port 80 open to the world, port 22 only from ONE address (or a security group), nothing else" % n,
-          "0.0.0.0/0" in srcs(r, 80) and "0.0.0.0/0" not in srcs(r, 22) and all(x["FromPort"] in (22, 80) and x["ToPort"] in (22, 80) for x in r) and bool(srcs(r, 22)))
-sv, sr, sw = (sg_ids(x) for x in (vote, result, worker))
-check("redis-server: port 6379 only from the vote and worker security groups (not a CIDR)",
-      srcs(ri.get("redis-server", []), 6379) == set(sv) | set(sw) and bool(sv) and bool(sw),
-      "found %s; use referenced_security_group_id" % sorted(srcs(ri.get("redis-server", []), 6379), key=str))
-check("db-server: port 5432 only from the worker and result security groups (not a CIDR)",
-      srcs(ri.get("db-server", []), 5432) == set(sw) | set(sr) and bool(sw) and bool(sr),
-      "found %s" % sorted(srcs(ri.get("db-server", []), 5432), key=str))
+r = ri.get("web-server", [])
+check("web-server: ports 80 (vote) and 8080 (result) open to the world, port 22 only from ONE address (or a security group), nothing else",
+      "0.0.0.0/0" in srcs(r, 80) and "0.0.0.0/0" in srcs(r, 8080) and "0.0.0.0/0" not in srcs(r, 22)
+      and all(x["FromPort"] == x["ToPort"] and x["FromPort"] in (22, 80, 8080) for x in r) and bool(srcs(r, 22)))
+sweb, sw, sd = (sg_ids(x) for x in (web, worker, data))
+check("data-server: port 6379 (Redis) only from the web and worker security groups (not a CIDR)",
+      srcs(ri.get("data-server", []), 6379) == set(sweb) | set(sw) and bool(sweb) and bool(sw),
+      "found %s; use referenced_security_group_id" % sorted(srcs(ri.get("data-server", []), 6379), key=str))
+check("data-server: port 5432 (PostgreSQL) only from the worker and web security groups (not a CIDR)",
+      srcs(ri.get("data-server", []), 5432) == set(sw) | set(sweb) and bool(sweb) and bool(sw),
+      "found %s" % sorted(srcs(ri.get("data-server", []), 5432), key=str))
+check("data-server accepts nothing but 6379, 5432 and SSH",
+      bool(ri.get("data-server")) and all(x["FromPort"] == x["ToPort"] and x["FromPort"] in (22, 6379, 5432) for x in ri.get("data-server", [])))
 check("worker-server accepts nothing except SSH (the worker only calls out)",
       all(x["FromPort"] == 22 and x["ToPort"] == 22 for x in ri.get("worker-server", [])))
 check("no private server accepts SSH from a CIDR (only through the jump host's security group)",
-      all(not x.get("CidrIpv4") for n in ("worker-server", "redis-server", "db-server") for x in ri.get(n, [])))
+      all(not x.get("CidrIpv4") for n in ("worker-server", "data-server") for x in ri.get(n, [])))
 
 print("== Live: the real app ==")
 
@@ -180,13 +182,14 @@ def scores(base):
     return None
 
 
-vip, rip = vote.get("PublicIpAddress"), result.get("PublicIpAddress")
-if vip and rip:
+vip = web.get("PublicIpAddress")
+rip = vip
+if vip:
     st, body = http("http://%s/" % vip)
     check("the vote page answers 200 on port 80 and shows the two options", st == 200 and "vote" in body.lower())
-    st, body = http("http://%s/" % rip)
-    check("the result page answers 200 on port 80", st == 200)
-    before = scores("http://%s" % rip)
+    st, body = http("http://%s:8080/" % rip)
+    check("the result page answers 200 on port 8080", st == 200)
+    before = scores("http://%s:8080" % rip)
     check("the result server can read PostgreSQL (the page receives live scores)", before is not None, "result -> db :5432 and the host name 'db'")
     voter = "check%d" % int(time.time())
     st, _ = http("http://%s/" % vip, b"vote=a", {"Cookie": "voter_id=" + voter, "Content-Type": "application/x-www-form-urlencoded"})
@@ -194,12 +197,12 @@ if vip and rip:
     after = None
     for _ in range(8):
         time.sleep(3)
-        after = scores("http://%s" % rip)
+        after = scores("http://%s:8080" % rip)
         if before and after and after.get("a", 0) > before.get("a", 0):
             break
     check("the vote arrives on the result page within 25 seconds (worker moved it from redis to postgres)",
           bool(before) and bool(after) and after.get("a", 0) > before.get("a", 0), "look at: journalctl -u worker on the worker server")
-    for name, host, port in (("redis-server", redis, 6379), ("db-server", db, 5432), ("worker-server", worker, 22)):
+    for name, host, port in (("data-server (Redis)", data, 6379), ("data-server (PostgreSQL)", data, 5432), ("worker-server", worker, 22)):
         ip = host.get("PrivateIpAddress", "")
         s = socket.socket(); s.settimeout(4)
         try:
@@ -217,9 +220,9 @@ if vip and rip:
             closed = True
         finally:
             s.close()
-        check("port %d on the public vote-server IP is closed" % port, closed)
+        check("port %d on the public web-server IP is closed" % port, closed)
 else:
-    check("the web servers have public IPs to test", False)
+    check("the web server has a public IP to test", False)
 
 print()
 if failed == 0:

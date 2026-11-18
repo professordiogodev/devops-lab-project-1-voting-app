@@ -3,7 +3,7 @@
 | | |
 |-|-|
 | **Time** | 5 days (project) |
-| **Cost** | a few cents per hour while it runs (five servers and a NAT Gateway); destroy it every evening |
+| **Cost** | a few cents per hour while it runs (three servers and a NAT Gateway); destroy it every evening |
 | **You need** | An AWS administrator user, the AWS CLI v2, Terraform 1.10 or newer, git, curl and ssh |
 
 ## How this lab works
@@ -22,36 +22,37 @@
 
 ## What this is
 
-Project 1 is a whole week of building, so there is no step-by-step lab. The **brief** (in the course) tells you what to build: the Example Voting App, five services on five AWS servers, with Terraform. This repository gives you the three things every serious project needs next to the code:
+Project 1 is a whole week of building, so there is no step-by-step lab. The **brief** (in the course) tells you what to build: the Example Voting App, five services on three AWS servers, with Terraform. This repository gives you the three things every serious project needs next to the code:
 
 | File | What it does |
 |------|--------------|
-| `verify.sh` | Reads your repository, **your real AWS account and the live app**, and prints PASS or FAIL for about 35 requirements: subnets and routes, one security group per service that trusts only its callers, no public IP on the private tiers, remote state, no secrets in git, and then a real vote cast on the vote page that must show up on the result page |
+| `verify.sh` | Reads your repository, **your real AWS account and the live app**, and prints PASS or FAIL for about 35 requirements: subnets and routes, one security group per machine that trusts only its callers, no public IP on the private machines, remote state, no secrets in git, and then a real vote cast on the vote page that must show up on the result page |
 | `SUBMISSION.md` | The questions you answer when you hand in the project, with pasted output and no screenshots |
 | `teardown.sh` and `verify-teardown.sh` | Destroy it and **prove** nothing is left running (a NAT Gateway bills every hour) |
 
 > [!IMPORTANT]
 > **Your mission**
 > - Fork this repository: it is also where your project lives (`terraform/`, `deploy.sh`, `systemd/`, `docs/`, `README.md`)
-> - Build the five servers and get a vote to travel across all of them (read the brief first)
+> - Build the three servers and get a vote to travel across all of them (read the brief first)
 > - Run `./verify.sh` often. It is the same list your instructor uses. Fix what is red.
 > - Open one pull request to the upstream project as your final activity (see the brief)
 > - On the last day answer `SUBMISSION.md`, destroy everything and paste `./verify-teardown.sh`
 
-**Time:** 5 days (project) | **Cost:** a few cents per hour while it runs (five servers and a NAT Gateway); destroy it every evening | **You need:** an AWS administrator user, the AWS CLI v2, Terraform 1.10 or newer, git, curl, ssh and Python 3.
+**Time:** 5 days (project) | **Cost:** a few cents per hour while it runs (three servers and a NAT Gateway); destroy it every evening | **You need:** an AWS administrator user, the AWS CLI v2, Terraform 1.10 or newer, git, curl, ssh and Python 3.
 
 <p align="center"><img src="assets/divider.svg" alt="" width="100%"></p>
 
 ## Rules the checker relies on
 
 1. In the AWS provider block use `default_tags { tags = { Project = "votingapp" } }`. Every resource carries the tag, and the checker and the teardown proof find your resources by it.
-2. Name the servers (tag `Name`) `vote-server`, `result-server`, `worker-server`, `redis-server` and `db-server`.
+2. Name the servers (tag `Name`) `web-server` (the `vote` and `result` apps), `worker-server` and `data-server` (Redis and PostgreSQL). The vote page answers on port 80 and the result page on port 8080.
 3. Put all Terraform in `terraform/`. Keep the private key (`*.pem`), the state and your secrets out of git (`.gitignore`).
-4. Deploy the application from `https://github.com/dockersamples/example-voting-app`. Use the commit `63e9150` so that everybody runs the same code.
+4. Use the region `us-east-1` in Terraform (the default of the `region` variable) **and** in your shell (`export AWS_DEFAULT_REGION=us-east-1`): `verify.sh` and `verify-teardown.sh` look in the region of your AWS CLI, and a mismatch would hide your servers from them.
+5. Deploy the application from `https://github.com/dockersamples/example-voting-app`. Use the commit `63e9150` so that everybody runs the same code.
 
 ## Using the checker
 
-<p align="center"><img src="assets/gifs/verify.gif" width="300" alt="A terminal running the lab&#x27;s verify script and printing PASS lines, ending with ALL CHECKS PASSED"></p>
+<p align="center"><img src="assets/gifs/verify.gif" width="640" alt="Terminal: the checker passes 36 of 36 on three servers, including a real vote that travels from the vote page through Redis and the worker to PostgreSQL and the result page"></p>
 
 ```bash
 ./verify.sh
@@ -60,7 +61,7 @@ Project 1 is a whole week of building, so there is no step-by-step lab. The **br
 It needs working AWS credentials (`aws sts get-caller-identity`), Python 3 and curl. Before anything is built it fails on the first AWS check; that is normal. As you build, the list turns green from the top.
 
 > [!NOTE]
-> **Think** `verify.sh` checks that the Redis server has *no public IP*, then that its private address times out from your laptop, and then that a vote still travels through it. Why are all three needed? What could make the first two true and the third false?
+> **Think** `verify.sh` checks that the data server has *no public IP*, then that its private address times out from your laptop, and then that a vote still travels through it. Why are all three needed? What could make the first two true and the third false?
 
 ## Your IP changes
 
@@ -81,7 +82,7 @@ Empty and delete your state bucket (all versions) after the destroy has finished
 <!-- teardown:start (generated by labs.py, do not edit) -->
 ## Tear down (mandatory)
 
-<p align="center"><img src="assets/gifs/teardown.gif" width="300" alt="A terminal running the teardown proof and printing TEARDOWN VERIFIED"></p>
+<p align="center"><img src="assets/gifs/teardown.gif" width="640" alt="Terminal: terraform destroy removes 38 resources and verify-teardown prints TEARDOWN VERIFIED 8 of 8"></p>
 
 Resources left behind cost money, keep doors open and pollute the next lab. Removing what you created is part of the job, so it is part of the submission: **you must prove it is gone**.
 
@@ -110,8 +111,8 @@ Answer the questions in `SUBMISSION.md` in **your fork** (paste output in code b
 **Questions to answer**
 
 1. Paste `terraform output` and the URLs of the vote page and the result page. Cast a vote and paste what the result page shows, and `journalctl -u worker -n 5` from the worker server.
-2. Draw the path of one vote: browser, vote server, Redis, worker, PostgreSQL, result server, browser. For each arrow say the protocol, the port and which security group rule allows it.
-3. The apps look for the hosts `redis` and `db` and for the password `postgres`. How did you make those names work on five machines, and what would you do about the password if you could not change the code? What did you try first and what went wrong?
+2. Draw the path of one vote: browser, the vote service on the web server, Redis on the data server, the worker, PostgreSQL on the data server, the result service on the web server, browser. For each arrow say the protocol, the port and which security group rule allows it.
+3. The apps look for the hosts `redis` and `db` and for the password `postgres`. How did you make those names work on three machines, and what would you do about the password if you could not change the code? What did you try first and what went wrong?
 4. Prove the private tiers are unreachable from the internet: show the instances without a public IP and a `curl --max-time 5` to the Redis or database private address that times out. Why can the worker reach Redis and you cannot?
 5. Run `./deploy.sh` twice and paste the end of both. What did you do to make the second run safe? Which parts of your deployment are still manual or fragile? What would you want a tool to do for you?
 6. Explain one thing that went wrong during the project: what you saw first, how you found the cause, and what you changed.

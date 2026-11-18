@@ -16,13 +16,13 @@ Answer in your own words. Where a question asks for output, paste it in a code b
 
 <!-- replace this line with your answer -->
 
-### Q2. Draw the path of one vote: browser, vote server, Redis, worker, PostgreSQL, result server, browser. For each arrow say the protocol, the port and which security group rule allows it.
+### Q2. Draw the path of one vote: browser, the vote service on the web server, Redis on the data server, the worker, PostgreSQL on the data server, the result service on the web server, browser. For each arrow say the protocol, the port and which security group rule allows it.
 
 **Your answer:**
 
 <!-- replace this line with your answer -->
 
-### Q3. The apps look for the hosts `redis` and `db` and for the password `postgres`. How did you make those names work on five machines, and what would you do about the password if you could not change the code? What did you try first and what went wrong?
+### Q3. The apps look for the hosts `redis` and `db` and for the password `postgres`. How did you make those names work on three machines, and what would you do about the password if you could not change the code? What did you try first and what went wrong?
 
 **Your answer:**
 
