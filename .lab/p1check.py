@@ -39,6 +39,13 @@ def read(p):
 print("== Your repository ==")
 tf = sorted(glob.glob("terraform/*.tf"))
 alltf = "\n".join(read(f) for f in tf)
+# The region comes from your Terraform (a literal region = "..." or the default of variable "region").
+_m = re.search(r'variable\s+"region"\s*\{[^}]*?default\s*=\s*"([a-z0-9-]+)"', alltf, re.S) or re.search(r'^\s*region\s*=\s*"([a-z0-9-]+)"', alltf, re.M)
+if _m:
+    os.environ["AWS_DEFAULT_REGION"] = _m.group(1)
+    print("Region (read from your Terraform): " + _m.group(1))
+else:
+    print("Region: from your AWS CLI configuration (no literal region found in terraform/)")
 check("terraform/ has .tf files", bool(tf), "put all your Terraform in terraform/")
 check("terraform fmt -check is clean", subprocess.run("terraform -chdir=terraform fmt -check -recursive", shell=True, capture_output=True).returncode == 0 and bool(tf), "terraform -chdir=terraform fmt")
 check("remote state: S3 backend with use_lockfile = true",

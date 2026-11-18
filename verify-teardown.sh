@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Proves nothing of Project 1 is left running in AWS. Run with: ./verify-teardown.sh
 set -u
+# Use the region your Terraform uses (the default of variable "region" or a literal region = "...")
+TFREGION=$(cat terraform/*.tf 2>/dev/null | tr '\n' ' ' | sed -n 's/.*variable *"region" *{[^}]*default *= *"\([a-z0-9-]*\)".*/\1/p')
+[ -n "$TFREGION" ] || TFREGION=$(grep -h '^ *region *= *"' terraform/*.tf 2>/dev/null | head -1 | sed 's/.*"\(.*\)".*/\1/')
+[ -n "$TFREGION" ] && export AWS_DEFAULT_REGION="$TFREGION"
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text 2>/dev/null) || { echo "No working AWS credentials." >&2; exit 1; }
 echo "Checking account $ACCOUNT, region ${AWS_DEFAULT_REGION:-${AWS_REGION:-$(aws configure get region)}}"
 pass=0; failn=0

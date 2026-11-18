@@ -47,7 +47,7 @@ Project 1 is a whole week of building, so there is no step-by-step lab. The **br
 1. In the AWS provider block use `default_tags { tags = { Project = "votingapp" } }`. Every resource carries the tag, and the checker and the teardown proof find your resources by it.
 2. Name the servers (tag `Name`) `web-server` (the `vote` and `result` apps), `worker-server` and `data-server` (Redis and PostgreSQL). The vote page answers on port 80 and the result page on port 8080.
 3. Put all Terraform in `terraform/`. Keep the private key (`*.pem`), the state and your secrets out of git (`.gitignore`).
-4. Use the region `us-east-1` in Terraform (the default of the `region` variable) **and** in your shell (`export AWS_DEFAULT_REGION=us-east-1`): `verify.sh` and `verify-teardown.sh` look in the region of your AWS CLI, and a mismatch would hide your servers from them.
+4. Choose one region (`us-east-1` is the default in the starter) and set it **in Terraform only**, as the default of the `region` variable. `verify.sh` and `verify-teardown.sh` read the region from your Terraform, so your servers cannot be hidden from them. Your own `aws` commands need the same region: `export AWS_DEFAULT_REGION=<your region>`.
 5. Deploy the application from `https://github.com/dockersamples/example-voting-app`. Use the commit `63e9150` so that everybody runs the same code.
 
 ## Using the checker
