@@ -1,5 +1,9 @@
 # LAB | Project 1 Starter Kit: The Voting App Checker
 
+## The situation
+
+A small company has run its team votes from one laptop under a desk. On Thursday the laptop's fan died, the vote page went dark, and nobody remembered how the five services were started. You are asked to rebuild the Example Voting App on AWS, as code: a web server, a worker and a data server, so that anyone can recreate it in minutes. Your instructor will ask you to destroy it and to prove that nothing is left billing.
+
 ## What this is
 
 Project 1 is a whole week of building, so there is no step-by-step lab. The **brief** (in the course) tells you what to build: the Example Voting App, five services on three AWS servers, with Terraform. This repository gives you the three things every serious project needs next to the code:
@@ -29,7 +33,7 @@ Project 1 is a whole week of building, so there is no step-by-step lab. The **br
 4. Choose one region (`us-east-1` is the default in the starter) and set it **in Terraform only**, as the default of the `region` variable. `verify.sh` and `verify-teardown.sh` read the region from your Terraform, so your servers cannot be hidden from them. Your own `aws` commands need the same region: `export AWS_DEFAULT_REGION=<your region>`.
 5. Deploy the application from `https://github.com/dockersamples/example-voting-app`. Use the commit `63e9150` so that everybody runs the same code.
 
-## Using the checker
+## Recon: run the checker on your empty fork
 
 ```bash
 ./verify.sh
