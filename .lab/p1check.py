@@ -18,6 +18,7 @@ def check(desc, ok, hint=""):
 
 
 def aws(*args):
+    args = tuple(p for x in args for p in (x.split(" ") if x.startswith("Name=tag:Project,") else (x,)))  # F holds two filters: Project and student
     try:
         out = subprocess.check_output(("aws",) + args + ("--output", "json"), stderr=subprocess.DEVNULL, timeout=60)
         return json.loads(out or "null")
@@ -73,9 +74,11 @@ check("an architecture diagram is in docs/ or the README",
       bool(glob.glob("docs/*.png") + glob.glob("docs/*.svg") + glob.glob("docs/*.jpg")) or "```mermaid" in read("README.md") or bool(re.search(r"!\[.*\]\(.*\)", read("README.md"))))
 
 print("== Your AWS account (resources tagged Project=votingapp) ==")
-F = "Name=tag:Project,Values=votingapp"
+STUDENT = subprocess.run(["bash", os.path.join(ROOT, ".lab", "handle.sh")], capture_output=True, text=True).stdout.strip()
+print("Your handle (from your IAM user name): " + STUDENT)
+F = "Name=tag:Project,Values=votingapp Name=tag:student,Values=" + STUDENT
 vpcs = (aws("ec2", "describe-vpcs", "--filters", F) or {}).get("Vpcs", [])
-check("a VPC tagged Project=votingapp exists", bool(vpcs), "provider block: default_tags { tags = { Project = \"votingapp\" } }")
+check("a VPC tagged Project=votingapp and student=%s exists" % STUDENT, bool(vpcs), "provider block: default_tags with Project and student (see rule 1 in the README)")
 if not vpcs:
     print("\nNothing else can be checked without the VPC.\n%d check(s) failed, %d passed" % (failed, passed))
     sys.exit(1)

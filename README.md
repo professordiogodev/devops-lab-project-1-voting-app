@@ -50,7 +50,22 @@ Project 1 is a whole week of building, so there is no step-by-step lab. The **br
 
 ## Rules the checker relies on
 
-1. In the AWS provider block use `default_tags { tags = { Project = "votingapp" } }`. Every resource carries the tag, and the checker and the teardown proof find your resources by it.
+1. Your whole class shares one AWS account, so tag everything with the project **and your handle**: your IAM user name in lowercase, printed by `.lab/handle.sh`. Read it in Terraform and put both in the provider's tags (and add the `hashicorp/external` provider to `required_providers`):
+
+   ```hcl
+   data "external" "me" {
+     program = ["bash", "${path.module}/../.lab/handle.sh", "--json"]
+   }
+
+   provider "aws" {
+     region = var.region
+     default_tags {
+       tags = { Project = "votingapp", student = data.external.me.result.student }
+     }
+   }
+   ```
+
+   The checker and the teardown proof find **your** resources by these two tags and never look at your classmates'. Names that are shared by the whole account also need your handle: call the key pair `votingapp-<your handle>` and the state bucket `votingapp-tfstate-<your handle>-<account id>`.
 2. Name the servers (tag `Name`) `web-server` (the `vote` and `result` apps), `worker-server` and `data-server` (Redis and PostgreSQL). The vote page answers on port 80 and the result page on port 8080.
 3. Put all Terraform in `terraform/`. Keep the private key (`*.pem`), the state and your secrets out of git (`.gitignore`).
 4. Choose one region (`us-east-1` is the default in the starter) and set it **in Terraform only**, as the default of the `region` variable. `verify.sh` and `verify-teardown.sh` read the region from your Terraform, so your servers cannot be hidden from them. Your own `aws` commands need the same region: `export AWS_DEFAULT_REGION=<your region>`.
